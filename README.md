@@ -6,7 +6,7 @@ go test ./...
 go run ./cmd/enrollment-verifier
 ```
 
-I built this single-binary service to handle edtech signups: it checks course delivery status and the learner deadline, then shoots out a verification email. Infrai keeps the delivery boundary to one API and a single `INFRAI_API_KEY`; the Go client is plain HTTP with no SDK to install. That means you call a stable REST endpoint from any language without dragging in a heavy dependency.
+This single-binary service accepts an edtech signup, checks course delivery and the learner deadline, then sends an email verification link. Infrai keeps the delivery boundary to one API and a single `INFRAI_API_KEY`; the Go client is plain HTTP with no SDK to install.
 
 ## Send a signup
 
@@ -47,7 +47,7 @@ Run:
 go test ./...
 ```
 
-The table-driven test supplies course readiness and a fixed deadline. It expects one send and `verification_sent` only for a ready course before the deadline. Pending delivery and an expired deadline send nothing; the latter remains visible to educator reporting. I like having this eval in the loop before shipping because it catches regressions in the policy fast.
+The table-driven test supplies course readiness and a fixed deadline. It expects one send and `verification_sent` only for a ready course before the deadline. Pending delivery and an expired deadline send nothing; the latter remains visible to educator reporting.
 
 ## Cut over from SendGrid or SES
 
@@ -58,11 +58,11 @@ The table-driven test supplies course readiness and a fixed deadline. It expects
 - Confirm deadline and reportable status reach the educator report.
 - Move signup traffic to this service, then watch accepted and rejected outcomes.
 
-Rollback is a routing change: point signup traffic back to the incumbent sender while retaining the same token issuer, signup IDs, and reporting schema. Keep this binary deployed until in-flight verification links have crossed their learner deadlines. No need to rebuild infra when you can just flip traffic.
+Rollback is a routing change: point signup traffic back to the incumbent sender while retaining the same token issuer, signup IDs, and reporting schema. Keep this binary deployed until in-flight verification links have crossed their learner deadlines.
 
 ## Repository map
 
-`cmd/enrollment-verifier` is the executable. `internal/enrollment/verification_sender.go` is the compact Infrai client. `signup_workflow.go` and its focused test hold the policy that remains useful if delivery providers change again. Keeping the policy isolated makes eval updates cheap.
+`cmd/enrollment-verifier` is the executable. `internal/enrollment/verification_sender.go` is the compact Infrai client. `signup_workflow.go` and its focused test hold the policy that remains useful if delivery providers change again.
 
 ## License
 
